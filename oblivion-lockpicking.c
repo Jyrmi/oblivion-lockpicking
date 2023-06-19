@@ -30,10 +30,13 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 1200;
+    const int screenHeight = 900;
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+
+    // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
+    Texture2D texture = LoadTexture("resources/lockpick-shadow.png");        // Texture loading
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -41,6 +44,16 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+        // Controls
+        //----------------------------------------------------------------------------------
+        // Check for keypresses here
+        //----------------------------------------------------------------------------------
+        if (IsKeyPressed(KEY_SPACE)) {
+            
+        }
+        //----------------------------------------------------------------------------------
+        
+        
         // Update
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
@@ -52,7 +65,9 @@ int main(void)
 
             ClearBackground(RAYWHITE);
 
-            DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+            DrawTexture(texture, screenWidth/2 - texture.width/2, screenHeight/2 - texture.height/2, WHITE);
+
+            DrawText("this IS a lockpick test!", 360, 370, 20, DARKGRAY);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
