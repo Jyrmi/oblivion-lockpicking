@@ -33,12 +33,11 @@ int main(void)
     int lockpickFrameHeight = lockpickTexture.height;
     int lockpickFramesCounter = 0;
     int lockpickAnimationFramesDuration = 20;
+    int lockpickYAxis = screenHeight/2.0f - lockpickTexture.height/2.0f;
     int lockpickPinPosition = 0;
     int maxPins = 5;
-    int pinXCoordinates[5] = { 0, 100, 200, 300, 400 };
     Rectangle lockpickSourceRec = { 0.0f, 0.0f, (float)lockpickFrameWidth, (float)lockpickFrameHeight };
-    Rectangle lockpickBoundsRec = { screenWidth/2.0f - lockpickTexture.width/2.0f, screenHeight/2.0f - lockpickTexture.height/2.0f, (float)lockpickTexture.width, lockpickFrameHeight };
-    Vector2 lockpickBoundsVector = (Vector2){ lockpickBoundsRec.x, lockpickBoundsRec.y };
+    Vector2 lockpickBoundsVector = (Vector2){ screenWidth/2.0f - lockpickTexture.width/2.0f, lockpickYAxis };
 
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
@@ -47,24 +46,9 @@ int main(void)
         //----------------------------------------------------------------------------------
         switch (lockpickMotionState) {
             case 1:
-            case 2:
-            {
-                /*
-                lockpickFramesCounter++;
-                int newXCoordinate = pinXCoordinates[lockpickPinPosition];
-                lockpickSourceRec.x = EaseLinearIn((float)lockpickFramesCounter, lockpickSourceRec.x, newXCoordinate, newXCoordinate*3);
-                
-                if (lockpickFramesCounter >= lockpickAnimationFramesDuration)
-                {
-                    lockpickFramesCounter = 0;
-                    lockpickMotionState = 0;
-                }
-                */
-            } break;
-            case 3:
             {
                 lockpickFramesCounter++;
-                lockpickSourceRec.y = EaseSineInOut((float)lockpickFramesCounter, 0, lockpickFrameHeight/2.0f, 10);
+                lockpickBoundsVector.y = EaseSineOut((float)lockpickFramesCounter, lockpickYAxis, lockpickFrameHeight, -10);
                 
                 if (lockpickFramesCounter >= lockpickAnimationFramesDuration)
                 {
@@ -83,26 +67,27 @@ int main(void)
             int newLockpickPinPosition = lockpickPinPosition-1;
             if (newLockpickPinPosition >= 0) {
                 lockpickPinPosition = newLockpickPinPosition;
-                lockpickSourceRec.x -= 40;
-                lockpickBoundsRec.x -= 40;
                 lockpickBoundsVector.x -= 40;
-                lockpickMotionState = 1;
+                lockpickBoundsVector.y = lockpickYAxis;
+                lockpickFramesCounter = 0;
+                lockpickMotionState = 0;
             }
         }
         if (IsKeyPressed(KEY_RIGHT)) {
             int newLockpickPinPosition = lockpickPinPosition+1;
             if (newLockpickPinPosition < maxPins) {
                 lockpickPinPosition = newLockpickPinPosition;
-                lockpickSourceRec.x += 40;
-                lockpickBoundsRec.x += 40;
                 lockpickBoundsVector.x += 40;
-                lockpickMotionState = 2;
+                lockpickBoundsVector.y = lockpickYAxis;
+                lockpickFramesCounter = 0;
+                lockpickMotionState = 0;
             }
         }
         if (IsKeyPressed(KEY_SPACE)) 
         {
             PlaySound(lockpickActivationSoundEffect);
-            lockpickMotionState = 3;
+            lockpickFramesCounter = 0;
+            lockpickMotionState = 1;
         }
         //----------------------------------------------------------------------------------
 
@@ -112,7 +97,7 @@ int main(void)
 
             ClearBackground(RAYWHITE);
 
-            DrawTextureRec(lockpickTexture, lockpickSourceRec, lockpickBoundsVector, WHITE);
+            DrawTextureV(lockpickTexture, lockpickBoundsVector, WHITE);
 
             DrawText("this IS a lockpick test!", 360, 370, 20, DARKGRAY);
             
