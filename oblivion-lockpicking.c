@@ -31,25 +31,22 @@ int main(void)
     Texture2D lockpickTextureBrokenRightHalf = LoadTexture("resources/lockpick-shadow-with-animation-space-broken-right-half.png");
     Sound lockpickActivationSoundEffect = LoadSound("resources/freesound-tink.ogg");
     Sound lockpickBreakSoundEffect = LoadSound("resources/freesound-snap-1.ogg");
+    int maxPins = 5;
     int lockpickMotionState = 0;
-    int lockpickFrameWidth = lockpickTexture.width;
-    int lockpickFrameHeight = lockpickTexture.height;
     int lockpickFramesCounter = 0;
     int lockpickAnimationFramesDuration = 30; // TODO: adjust this on the fly to the pace of the pin when pressed
     int lockpickYAxis = screenHeight/2.0f - lockpickTexture.height/2.0f;
     int lockpickStartingXCoordinate = screenWidth/2.0f - lockpickTexture.width/2.0f;
     int lockpickPinPosition = 0;
     int lockpickMoveDistancePerPin = 60;
-    int maxPins = 5;
-    Rectangle lockpickSourceRec = { 0.0f, 0.0f, (float)lockpickFrameWidth, (float)lockpickFrameHeight };
     Vector2 lockpickVector = (Vector2){ lockpickStartingXCoordinate, lockpickYAxis };
     Vector2 lockpickBrokenLeftHalfVector = (Vector2){ lockpickVector.x, lockpickYAxis };
     Vector2 lockpickBrokenRightHalfVector = (Vector2){ lockpickVector.x + lockpickTextureBrokenLeftHalf.width, lockpickYAxis };
-    float lockpickBrokenRotation = 0;
-    float lockpickBrokenRotationMultiplier = 3;
-    float lockpickBrokenScale = 1;
+    float lockpickBrokenAnimationRotation = 0;
+    float lockpickBrokenAnimationRotationMultiplier = 3;
     float lockpickBrokenAnimationDistanceMultiplier = 10;
     float lockpickMoveAnimationSpeedMultiplier = 10;
+    float lockpickScale = 1;
 
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
@@ -76,7 +73,7 @@ int main(void)
             {
                 lockpickFramesCounter++;
                 
-                lockpickVector.y = EaseSineOut((float)lockpickFramesCounter, lockpickYAxis, lockpickFrameHeight, -lockpickAnimationFramesDuration/2);
+                lockpickVector.y = EaseSineOut((float)lockpickFramesCounter, lockpickYAxis, lockpickTexture.height, -lockpickAnimationFramesDuration/2);
                 
                 if (lockpickFramesCounter >= lockpickAnimationFramesDuration)
                 {
@@ -95,7 +92,7 @@ int main(void)
                 lockpickBrokenRightHalfVector.x = lockpickVector.x + lockpickTextureBrokenLeftHalf.width + lockpickBrokenExplosionDistance;
                 lockpickBrokenLeftHalfVector.y = lockpickBrokenYCoordinate;
                 lockpickBrokenRightHalfVector.y = lockpickBrokenYCoordinate;
-                lockpickBrokenRotation = lockpickBrokenRotationMultiplier * lockpickFramesCounter;
+                lockpickBrokenAnimationRotation = lockpickBrokenAnimationRotationMultiplier * lockpickFramesCounter;
                 
                 if (lockpickFramesCounter >= lockpickAnimationFramesDuration)
                 {
@@ -131,7 +128,6 @@ int main(void)
         {
             PlaySound(lockpickActivationSoundEffect);
             lockpickVector.x = lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
-            
             lockpickFramesCounter = 0;
             lockpickMotionState = 3;
         }
@@ -142,11 +138,10 @@ int main(void)
             lockpickVector.y = lockpickYAxis;
             lockpickBrokenLeftHalfVector.x = lockpickVector.x;
             lockpickBrokenRightHalfVector.x = lockpickVector.x + lockpickTextureBrokenLeftHalf.width;
-            lockpickBrokenScale = 1;
-            lockpickMotionState = 4;
-            
+            lockpickBrokenAnimationRotation = 0;
+            lockpickScale = 1;
             lockpickFramesCounter = 0;
-            lockpickBrokenRotation = 0;
+            lockpickMotionState = 4;
         }
         //----------------------------------------------------------------------------------
 
@@ -167,8 +162,8 @@ int main(void)
                 case 4:
                 {
                     DrawText("Broke", 360, 440, 30, RED);
-                    DrawTextureEx(lockpickTextureBrokenLeftHalf, lockpickBrokenLeftHalfVector, lockpickBrokenRotation, lockpickBrokenScale, WHITE);
-                    DrawTextureEx(lockpickTextureBrokenRightHalf, lockpickBrokenRightHalfVector, -lockpickBrokenRotation, lockpickBrokenScale, WHITE);
+                    DrawTextureEx(lockpickTextureBrokenLeftHalf, lockpickBrokenLeftHalfVector, lockpickBrokenAnimationRotation, lockpickScale, WHITE);
+                    DrawTextureEx(lockpickTextureBrokenRightHalf, lockpickBrokenRightHalfVector, -lockpickBrokenAnimationRotation, lockpickScale, WHITE);
                 } break;
             }
 
