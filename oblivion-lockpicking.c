@@ -35,19 +35,21 @@ int main(void)
     int lockpickFrameWidth = lockpickTexture.width;
     int lockpickFrameHeight = lockpickTexture.height;
     int lockpickFramesCounter = 0;
-    int lockpickAnimationFramesDuration = 30;
+    int lockpickAnimationFramesDuration = 30; // TODO: adjust this on the fly to the pace of the pin when pressed
     int lockpickYAxis = screenHeight/2.0f - lockpickTexture.height/2.0f;
+    int lockpickStartingXCoordinate = screenWidth/2.0f - lockpickTexture.width/2.0f;
     int lockpickPinPosition = 0;
-    int lockpickMoveDistancePerPin = 40;
+    int lockpickMoveDistancePerPin = 60;
     int maxPins = 5;
     Rectangle lockpickSourceRec = { 0.0f, 0.0f, (float)lockpickFrameWidth, (float)lockpickFrameHeight };
-    Vector2 lockpickVector = (Vector2){ screenWidth/2.0f - lockpickTexture.width/2.0f, lockpickYAxis };
+    Vector2 lockpickVector = (Vector2){ lockpickStartingXCoordinate, lockpickYAxis };
     Vector2 lockpickBrokenLeftHalfVector = (Vector2){ lockpickVector.x, lockpickYAxis };
     Vector2 lockpickBrokenRightHalfVector = (Vector2){ lockpickVector.x + lockpickTextureBrokenLeftHalf.width, lockpickYAxis };
     float lockpickBrokenRotation = 0;
     float lockpickBrokenRotationMultiplier = 3;
     float lockpickBrokenScale = 1;
-    float lockpickBrokenExplosionMultiplier = 10;
+    float lockpickBrokenAnimationDistanceMultiplier = 10;
+    float lockpickMoveAnimationSpeedMultiplier = 10;
 
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
@@ -55,9 +57,25 @@ int main(void)
         // Update
         //----------------------------------------------------------------------------------
         switch (lockpickMotionState) {
-            case 1: // Push the lockpick up
+            case 1: // Move the lockpick left
+            case 2: // Move the lockpick right
             {
                 lockpickFramesCounter++;
+                
+                bool directionToMove = lockpickVector.x <= lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
+                int moveAmount = (directionToMove ? 1 : -1) * (lockpickMoveDistancePerPin / (lockpickAnimationFramesDuration / lockpickMoveAnimationSpeedMultiplier));
+                lockpickVector.x += moveAmount;
+                
+                if (lockpickFramesCounter >= lockpickAnimationFramesDuration / lockpickMoveAnimationSpeedMultiplier)
+                {
+                    lockpickFramesCounter = 0;
+                    lockpickMotionState = 0;
+                }
+            } break;
+            case 3: // Push the lockpick up
+            {
+                lockpickFramesCounter++;
+                
                 lockpickVector.y = EaseSineOut((float)lockpickFramesCounter, lockpickYAxis, lockpickFrameHeight, -lockpickAnimationFramesDuration/2);
                 
                 if (lockpickFramesCounter >= lockpickAnimationFramesDuration)
@@ -66,13 +84,15 @@ int main(void)
                     lockpickMotionState = 0;
                 }
             } break;
-            case 2: // Break the lockpick
+            case 4: // Break the lockpick
             {
                 lockpickFramesCounter++;
-                int lockpickBrokenExplosionDistance = lockpickBrokenExplosionMultiplier * lockpickFramesCounter;
+                
+                int lockpickBrokenExplosionDistance = lockpickBrokenAnimationDistanceMultiplier * lockpickFramesCounter;
                 int lockpickBrokenYCoordinate = EaseQuadIn((float)lockpickFramesCounter, lockpickYAxis, 1, 1);
+                
                 lockpickBrokenLeftHalfVector.x = lockpickVector.x - lockpickBrokenExplosionDistance;
-                lockpickBrokenRightHalfVector.x = lockpickVector.x + lockpickTexture.width/2.0f + lockpickBrokenExplosionDistance;
+                lockpickBrokenRightHalfVector.x = lockpickVector.x + lockpickTextureBrokenLeftHalf.width + lockpickBrokenExplosionDistance;
                 lockpickBrokenLeftHalfVector.y = lockpickBrokenYCoordinate;
                 lockpickBrokenRightHalfVector.y = lockpickBrokenYCoordinate;
                 lockpickBrokenRotation = lockpickBrokenRotationMultiplier * lockpickFramesCounter;
@@ -91,39 +111,43 @@ int main(void)
         // Check for keypresses here
         //----------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_LEFT)) {
-            int newLockpickPinPosition = lockpickPinPosition-1;
+            int newLockpickPinPosition = lockpickPinPosition - 1;
             if (newLockpickPinPosition >= 0) {
                 lockpickPinPosition = newLockpickPinPosition;
-                lockpickVector.x -= lockpickMoveDistancePerPin;
                 lockpickVector.y = lockpickYAxis;
+                
                 lockpickFramesCounter = 0;
-                lockpickMotionState = 0;
+                lockpickMotionState = 1;
             }
         }
         if (IsKeyPressed(KEY_RIGHT)) {
-            int newLockpickPinPosition = lockpickPinPosition+1;
+            int newLockpickPinPosition = lockpickPinPosition + 1;
             if (newLockpickPinPosition < maxPins) {
                 lockpickPinPosition = newLockpickPinPosition;
-                lockpickVector.x += lockpickMoveDistancePerPin;
                 lockpickVector.y = lockpickYAxis;
+                
                 lockpickFramesCounter = 0;
-                lockpickMotionState = 0;
+                lockpickMotionState = 2;
             }
         }
         if (IsKeyPressed(KEY_SPACE)) 
         {
             PlaySound(lockpickActivationSoundEffect);
+            lockpickVector.x = lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
+            
             lockpickFramesCounter = 0;
-            lockpickMotionState = 1;
+            lockpickMotionState = 3;
         }
         if (IsKeyPressed(KEY_B))
         {
             PlaySound(lockpickBreakSoundEffect);
+            lockpickVector.x = lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
             lockpickVector.y = lockpickYAxis;
+            lockpickBrokenScale = 1;
+            lockpickMotionState = 4;
+            
             lockpickFramesCounter = 0;
             lockpickBrokenRotation = 0;
-            lockpickBrokenScale = 1;
-            lockpickMotionState = 2;
         }
         //----------------------------------------------------------------------------------
 
@@ -136,10 +160,12 @@ int main(void)
             switch (lockpickMotionState) {
                 case 0:
                 case 1:
+                case 2:
+                case 3:
                 {
                     DrawTextureV(lockpickTexture, lockpickVector, WHITE);
                 } break;
-                case 2:
+                case 4:
                 {
                     DrawText("Broke", 360, 440, 30, RED);
                     DrawTextureEx(lockpickTextureBrokenLeftHalf, lockpickBrokenLeftHalfVector, lockpickBrokenRotation, lockpickBrokenScale, WHITE);
@@ -153,6 +179,11 @@ int main(void)
             char result[1];
             sprintf(result, "%d", lockpickPinPosition);
             DrawText(result, 420, 400, 30, DARKGRAY);
+            
+            char xCoordinate[5];
+            sprintf(xCoordinate, "%f", lockpickVector.x);       
+            DrawText("X: ", 500, 400, 30, DARKGRAY);
+            DrawText(xCoordinate, 540, 400, 30, DARKGRAY);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
