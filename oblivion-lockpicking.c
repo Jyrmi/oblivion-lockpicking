@@ -110,27 +110,24 @@ int main(void)
         //----------------------------------------------------------------------------------
         // Check for keypresses here
         //----------------------------------------------------------------------------------
-        if (IsKeyPressed(KEY_LEFT)) {
-            int newLockpickPinPosition = lockpickPinPosition - 1;
-            if (newLockpickPinPosition >= 0) {
-                lockpickPinPosition = newLockpickPinPosition;
-                lockpickVector.y = lockpickYAxis;
-                
-                lockpickFramesCounter = 0;
+        if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT)) // Move the lockpick left or right
+        {
+            if (IsKeyPressed(KEY_LEFT) && lockpickPinPosition > 0)
+            {
+                lockpickPinPosition -= 1;
                 lockpickMotionState = 1;
             }
-        }
-        if (IsKeyPressed(KEY_RIGHT)) {
-            int newLockpickPinPosition = lockpickPinPosition + 1;
-            if (newLockpickPinPosition < maxPins) {
-                lockpickPinPosition = newLockpickPinPosition;
-                lockpickVector.y = lockpickYAxis;
-                
-                lockpickFramesCounter = 0;
+            
+            if (IsKeyPressed(KEY_RIGHT) && lockpickPinPosition < maxPins - 1)
+            {
+                lockpickPinPosition += 1;
                 lockpickMotionState = 2;
             }
+            
+            lockpickVector.y = lockpickYAxis;
+            lockpickFramesCounter = 0;
         }
-        if (IsKeyPressed(KEY_SPACE)) 
+        if (IsKeyPressed(KEY_SPACE)) // Push the lockpick up
         {
             PlaySound(lockpickActivationSoundEffect);
             lockpickVector.x = lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
@@ -138,11 +135,13 @@ int main(void)
             lockpickFramesCounter = 0;
             lockpickMotionState = 3;
         }
-        if (IsKeyPressed(KEY_B))
+        if (IsKeyPressed(KEY_B)) // Break the lockpick
         {
             PlaySound(lockpickBreakSoundEffect);
             lockpickVector.x = lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
             lockpickVector.y = lockpickYAxis;
+            lockpickBrokenLeftHalfVector.x = lockpickVector.x;
+            lockpickBrokenRightHalfVector.x = lockpickVector.x + lockpickTextureBrokenLeftHalf.width;
             lockpickBrokenScale = 1;
             lockpickMotionState = 4;
             
