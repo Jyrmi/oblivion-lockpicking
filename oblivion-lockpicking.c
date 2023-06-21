@@ -80,6 +80,7 @@ int main(void)
 		pins[i] = pin;
 	}
 	Texture2D pinTexture = LoadTexture("resources/tumbler-pin-shadow.png");
+    Sound pinClickSoundEffect = LoadSound("resources/freesound-computer-mouse-click.mp3");
 
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
@@ -207,6 +208,18 @@ int main(void)
 				}
 			}
         }
+        // if (IsKeyPressed(KEY_B)) // Break the lockpick
+        // {
+            // PlaySound(lockpickBreakSoundEffect);
+            // lockpickVector.x = lockpickStartingXCoordinate + lockpickPinPosition * lockpickMoveDistancePerPin;
+            // lockpickVector.y = lockpickYAxis;
+            // lockpickBrokenLeftHalfVector.x = lockpickVector.x;
+            // lockpickBrokenRightHalfVector.x = lockpickVector.x + lockpickTextureBrokenLeftHalf.width;
+            // lockpickBrokenAnimationRotation = 0;
+            // lockpickScale = 1;
+            // lockpickMotionState = 4;
+            // lockpickFramesCounter = 0;
+        // }
         //----------------------------------------------------------------------------------
 
         // Draw
