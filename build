@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# this build script is for Mac OS
+
+cc oblivion-lockpicking.c `pkg-config --libs --cflags raylib` -o Game
+./Game
+
